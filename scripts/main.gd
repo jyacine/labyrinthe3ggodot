@@ -21,11 +21,15 @@ func _ready() -> void:
 	# Create exit door
 	_create_exit()
 
-	# Create monsters: first 3 = Janna, last 3 = Souleym
-	for i in range(game_manager.monster_positions.size()):
+	# Monster split: first half = Janna, second half = Souleym
+	# easy=1+1, medium=2+2, hard=3+3
+	var total = game_manager.monster_positions.size()
+	var janna_count = total / 2  # integer division
+
+	for i in range(total):
 		var monster = Monster.new()
 
-		if i < 3:
+		if i < janna_count:
 			# Janna creeper
 			monster.face_texture_path = "res://assets/janna.png"
 			monster.sound_patrol_path = "res://assets/janna_sound.wav"

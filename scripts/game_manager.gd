@@ -20,7 +20,14 @@ func _init() -> void:
 	player_pos   = spawns["player"]
 	exit_pos     = spawns["exit"]
 
-	# 6 monster spawn positions (3 Janna + 3 Souleym)
+	# Monster count based on selected level
+	# easy=2 (1 Janna + 1 Souleym), medium=4, hard=6
+	var total_monsters: int = 4
+	match Config.selected_level:
+		"easy":   total_monsters = 2
+		"medium": total_monsters = 4
+		"hard":   total_monsters = 6
+
 	var all_m = spawns["monsters"]
 	var floors = _get_floor_cells()
 	floors.shuffle()
@@ -29,9 +36,11 @@ func _init() -> void:
 	for f in floors:
 		if f not in used:
 			extra.append(f)
-		if extra.size() >= 3:
+		if extra.size() >= 6:
 			break
-	monster_positions = all_m + extra   # 6 total
+	# Slice to exact monster count needed
+	var all_positions = all_m + extra
+	monster_positions = all_positions.slice(0, total_monsters)
 
 	# Safe zones (5 glowing spots spread across the maze)
 	var safe_cands: Array = []

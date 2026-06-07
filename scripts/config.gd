@@ -30,6 +30,12 @@ const INVISIBILITY_DURATION = 5.0
 const GAME_DURATION = 150
 const ENRAGE_PATH_STEPS = 30
 
+# Level selection (set from menu before game starts)
+# "easy"   = 1x Janna + 1x Souleym
+# "medium" = 2x Janna + 2x Souleym
+# "hard"   = 3x Janna + 3x Souleym
+var selected_level: String = "medium"
+
 # UI/Rendering
 const FPS = 60
 const MINIMAP_CELL_SIZE = 4
