@@ -29,8 +29,10 @@ var btn_retry: Button
 var fear_music: AudioStreamPlayer
 var win_player: AudioStreamPlayer
 var lose_player: AudioStreamPlayer
+var safe_player: AudioStreamPlayer
 var _game_over_played: bool = false
 var _fear_playing: bool = false
+var _was_invisible: bool = false
 
 func _ready() -> void:
 	var root = get_parent()
@@ -131,6 +133,12 @@ func _process(delta: float) -> void:
 
 	# Fear music: play when any monster is close
 	_update_fear_music()
+
+	# Safe-zone chime: play once on the moment the player enters a safe zone
+	if game_manager.is_playing:
+		if game_manager.is_invisible and not _was_invisible:
+			safe_player.play()
+		_was_invisible = game_manager.is_invisible
 
 	# Check win/lose conditions
 	if not game_manager.is_playing:
@@ -332,31 +340,49 @@ func _show_overlay() -> void:
 	btn_retry.visible = true
 
 func _setup_audio() -> void:
-	# Fear music (looping)
+	# Fear sound (looping, fades in as a monster approaches)
 	fear_music = AudioStreamPlayer.new()
-	if ResourceLoader.exists("res://assets/fear_music.wav"):
-		var s = load("res://assets/fear_music.wav") as AudioStreamWAV
-		if s != null:
+	if ResourceLoader.exists("res://assets/fear_sound.mp3"):
+		var s = load("res://assets/fear_sound.mp3")
+		# Loop property differs by stream type (WAV uses loop_mode, MP3/Ogg use `loop`)
+		if s is AudioStreamMP3 or s is AudioStreamOggVorbis:
+			s.loop = true
+		elif s is AudioStreamWAV:
 			s.loop_mode = AudioStreamWAV.LOOP_FORWARD  # true loop — no gap
 		fear_music.stream = s
+	else:
+		push_warning("UIManager: res://assets/fear_sound.mp3 not found — fear sound will be silent")
 	fear_music.volume_db = -80.0  # Start silent
 	add_child(fear_music)
 	# Don't autoplay here — web blocks audio before first user gesture.
 	# _update_fear_music() will start it once the game is live.
 
-	# Win sound
+	# Win sound (player reaches the exit)
 	win_player = AudioStreamPlayer.new()
-	if ResourceLoader.exists("res://assets/win_sound.wav"):
-		win_player.stream = load("res://assets/win_sound.wav")
+	if ResourceLoader.exists("res://assets/win_sound.mp3"):
+		win_player.stream = load("res://assets/win_sound.mp3")
+	else:
+		push_warning("UIManager: res://assets/win_sound.mp3 not found — win sound will be silent")
 	win_player.volume_db = 0.0
 	add_child(win_player)
 
-	# Lose sound
+	# Lose sound (game over — caught by monster or ran out of time)
 	lose_player = AudioStreamPlayer.new()
-	if ResourceLoader.exists("res://assets/lose_sound.wav"):
-		lose_player.stream = load("res://assets/lose_sound.wav")
+	if ResourceLoader.exists("res://assets/loose_sound.mp3"):
+		lose_player.stream = load("res://assets/loose_sound.mp3")
+	else:
+		push_warning("UIManager: res://assets/loose_sound.mp3 not found — lose sound will be silent")
 	lose_player.volume_db = 0.0
 	add_child(lose_player)
+
+	# Safe-zone chime (player steps into a safe zone and becomes invisible to monsters)
+	safe_player = AudioStreamPlayer.new()
+	if ResourceLoader.exists("res://assets/safe_sound.mp3"):
+		safe_player.stream = load("res://assets/safe_sound.mp3")
+	else:
+		push_warning("UIManager: res://assets/safe_sound.mp3 not found — safe-zone sound will be silent")
+	safe_player.volume_db = 0.0
+	add_child(safe_player)
 
 func _update_fear_music() -> void:
 	if fear_music == null or fear_music.stream == null or player == null:
