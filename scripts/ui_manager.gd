@@ -294,7 +294,7 @@ func _draw_minimap_point(grid_x: int, grid_y: int, color: Color, size: int) -> v
 func _show_overlay() -> void:
 	overlay_panel.visible = true
 
-	var is_win = game_manager.time_left < 0 or player.get_grid_position() == game_manager.exit_pos
+	var is_win = game_manager.time_left < 0  # ExitDoor sets time_left=-1 on win
 
 	if is_win:
 		overlay_label.text = "YOU WIN!"
@@ -335,10 +335,14 @@ func _setup_audio() -> void:
 	# Fear music (looping)
 	fear_music = AudioStreamPlayer.new()
 	if ResourceLoader.exists("res://assets/fear_music.wav"):
-		fear_music.stream = load("res://assets/fear_music.wav")
+		var s = load("res://assets/fear_music.wav") as AudioStreamWAV
+		if s != null:
+			s.loop_mode = AudioStreamWAV.LOOP_FORWARD  # true loop — no gap
+		fear_music.stream = s
 	fear_music.volume_db = -80.0  # Start silent
 	add_child(fear_music)
-	fear_music.play()
+	# Don't autoplay here — web blocks audio before first user gesture.
+	# _update_fear_music() will start it once the game is live.
 
 	# Win sound
 	win_player = AudioStreamPlayer.new()
@@ -355,7 +359,10 @@ func _setup_audio() -> void:
 	add_child(lose_player)
 
 func _update_fear_music() -> void:
-	if fear_music == null or player == null:
+	if fear_music == null or fear_music.stream == null or player == null:
+		return
+	# Don't touch fear_music once game is over — win/lose sound has taken over
+	if not game_manager.is_playing:
 		return
 
 	# Find closest monster distance
@@ -378,6 +385,7 @@ func _update_fear_music() -> void:
 	# Smooth volume transition
 	fear_music.volume_db = lerp(fear_music.volume_db, target_db, 0.05)
 
-	# Loop the music manually
+	# Start playback on first call (respects web audio policy — by now the
+	# user has interacted with the click overlay so autoplay is allowed)
 	if not fear_music.playing:
 		fear_music.play()
