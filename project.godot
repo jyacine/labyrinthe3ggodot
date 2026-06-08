@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="Labyrinthe 3D"
 config/description="A first-person 3D maze escape game with monsters and power-ups"
-run/main_scene="res://scenes/Main.tscn"
+run/main_scene="res://scenes/Menu.tscn"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"
 
