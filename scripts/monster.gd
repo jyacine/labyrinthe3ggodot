@@ -13,10 +13,10 @@ var path_timer: float = 0.0
 var state: String = "patrol"  # patrol, chase, enrage
 var current_grid_pos: Array
 
-# Speeds
-var patrol_speed: float = 1.4
-var chase_speed: float = 2.1
-var enrage_speed: float = 3.4
+# Speeds — all slower than player (player = 3.2)
+var patrol_speed: float = 1.0   # slow patrol
+var chase_speed: float = 1.8    # still slower than player
+var enrage_speed: float = 2.8   # nearly player speed when close to exit
 
 # Detection
 var detection_radius: float = Config.MONSTER_DETECTION_RADIUS

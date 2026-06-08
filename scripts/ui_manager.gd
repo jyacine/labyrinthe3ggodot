@@ -25,6 +25,13 @@ var btn_backward: Button
 # Overlay buttons
 var btn_retry: Button
 
+# Audio
+var fear_music: AudioStreamPlayer
+var win_player: AudioStreamPlayer
+var lose_player: AudioStreamPlayer
+var _game_over_played: bool = false
+var _fear_playing: bool = false
+
 func _ready() -> void:
 	var root = get_parent()
 	game_manager = root.get_node("GameManager")
@@ -101,6 +108,7 @@ func _ready() -> void:
 	add_child(overlay_label)
 
 	_create_mobile_buttons()
+	_setup_audio()
 
 func _process(delta: float) -> void:
 	# Hide click/tap overlay once interaction happens
@@ -121,8 +129,19 @@ func _process(delta: float) -> void:
 	# Update minimap
 	_update_minimap()
 
+	# Fear music: play when any monster is close
+	_update_fear_music()
+
 	# Check win/lose conditions
 	if not game_manager.is_playing:
+		if not _game_over_played:
+			_game_over_played = true
+			fear_music.stop()
+			var is_win = game_manager.time_left < 0
+			if is_win:
+				win_player.play()
+			else:
+				lose_player.play()
 		_show_overlay()
 
 func _create_mobile_buttons() -> void:
@@ -311,3 +330,54 @@ func _show_overlay() -> void:
 		overlay_panel.add_child(btn_retry)
 
 	btn_retry.visible = true
+
+func _setup_audio() -> void:
+	# Fear music (looping)
+	fear_music = AudioStreamPlayer.new()
+	if ResourceLoader.exists("res://assets/fear_music.wav"):
+		fear_music.stream = load("res://assets/fear_music.wav")
+	fear_music.volume_db = -80.0  # Start silent
+	add_child(fear_music)
+	fear_music.play()
+
+	# Win sound
+	win_player = AudioStreamPlayer.new()
+	if ResourceLoader.exists("res://assets/win_sound.wav"):
+		win_player.stream = load("res://assets/win_sound.wav")
+	win_player.volume_db = 0.0
+	add_child(win_player)
+
+	# Lose sound
+	lose_player = AudioStreamPlayer.new()
+	if ResourceLoader.exists("res://assets/lose_sound.wav"):
+		lose_player.stream = load("res://assets/lose_sound.wav")
+	lose_player.volume_db = 0.0
+	add_child(lose_player)
+
+func _update_fear_music() -> void:
+	if fear_music == null or player == null:
+		return
+
+	# Find closest monster distance
+	var min_dist = INF
+	var monsters = get_tree().get_nodes_in_group("monsters")
+	for monster in monsters:
+		var d = player.position.distance_to(monster.position)
+		if d < min_dist:
+			min_dist = d
+
+	# Fade in fear music as monster approaches (within 12 units)
+	var fade_range = 12.0
+	var target_db: float
+	if min_dist < fade_range:
+		var t = 1.0 - (min_dist / fade_range)  # 0..1
+		target_db = lerp(-30.0, 0.0, t)
+	else:
+		target_db = -80.0
+
+	# Smooth volume transition
+	fear_music.volume_db = lerp(fear_music.volume_db, target_db, 0.05)
+
+	# Loop the music manually
+	if not fear_music.playing:
+		fear_music.play()
