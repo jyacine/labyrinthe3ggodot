@@ -40,9 +40,9 @@ func _ready() -> void:
 	add_child(sub)
 
 	# Level buttons
-	_add_level_button("EASY",   "1x Janna  +  1x Souleym",  Color(0.15, 0.65, 0.25), "easy",   280)
-	_add_level_button("MEDIUM", "2x Janna  +  2x Souleym",  Color(0.75, 0.55, 0.05), "medium", 420)
-	_add_level_button("HARD",   "3x Janna  +  3x Souleym",  Color(0.75, 0.15, 0.10), "hard",   560)
+	_add_level_button("EASY",   "",  Color(0.15, 0.65, 0.25), "easy",   280)
+	_add_level_button("MEDIUM", "",  Color(0.75, 0.55, 0.05), "medium", 420)
+	_add_level_button("HARD",   "",  Color(0.75, 0.15, 0.10), "hard",   560)
 
 func _add_level_button(label: String, desc: String, color: Color, level: String, y: int) -> void:
 	var btn = Button.new()

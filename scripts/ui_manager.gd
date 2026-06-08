@@ -240,9 +240,9 @@ func _update_minimap() -> void:
 	var exit_grid = game_manager.exit_pos
 	_draw_minimap_point(exit_grid[0], exit_grid[1], Color.GREEN, 2)
 
-	# Draw player
+	# Draw player (bigger dot + bright cyan for clear visibility)
 	var player_grid = player.get_grid_position()
-	_draw_minimap_point(player_grid[0], player_grid[1], Color.BLUE, 1)
+	_draw_minimap_point(player_grid[0], player_grid[1], Color.CYAN, 4)
 
 	# Draw monsters
 	var monsters = get_tree().get_nodes_in_group("monsters")
