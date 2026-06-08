@@ -21,30 +21,48 @@ func _ready() -> void:
 	# Create exit door
 	_create_exit()
 
-	# Monster split: first half = Janna, second half = Souleym
-	# easy=1+1, medium=2+2, hard=3+3
+	# 3 monster types, count_per_type each (1/2/3 for easy/medium/hard).
+	# Positions are ordered: [malak × n, bayan × n, kaltoum × n]
 	var total = game_manager.monster_positions.size()
-	var janna_count = total / 2  # integer division
+	var count_per_type: int = total / 3  # always a whole number
+
+	# Monster type definitions
+	var monster_types = [
+		{
+			"face":   "res://assets/malak.png",
+			"sound":  "res://assets/malak.mp3",
+			"normal": Color(0.70, 0.20, 0.20),   # deep red
+			"chase":  Color(0.90, 0.40, 0.10),
+			"enrage": Color(1.00, 0.10, 0.00),
+		},
+		{
+			"face":   "res://assets/bayan.png",
+			"sound":  "res://assets/bayan.mp3",
+			"normal": Color(0.15, 0.40, 0.70),   # deep blue
+			"chase":  Color(0.20, 0.60, 0.90),
+			"enrage": Color(0.00, 0.20, 1.00),
+		},
+		{
+			"face":   "res://assets/kaltoum.png",
+			"sound":  "res://assets/kaltoum.mp3",
+			"normal": Color(0.45, 0.15, 0.65),   # deep purple
+			"chase":  Color(0.65, 0.20, 0.80),
+			"enrage": Color(0.85, 0.00, 1.00),
+		},
+	]
 
 	for i in range(total):
 		var monster = Monster.new()
+		var type_idx: int = i / count_per_type  # 0=malak, 1=bayan, 2=kaltoum
+		type_idx = min(type_idx, 2)  # clamp in case of rounding
+		var t = monster_types[type_idx]
 
-		if i < janna_count:
-			# Janna creeper
-			monster.face_texture_path = "res://assets/janna.png"
-			monster.sound_patrol_path = "res://assets/janna_sound.wav"
-			monster.sound_chase_path  = "res://assets/janna_sound.wav"
-			monster.body_color_normal = Color(0.25, 0.55, 0.15)
-			monster.body_color_chase  = Color(0.55, 0.65, 0.10)
-			monster.body_color_enrage = Color(0.85, 0.20, 0.10)
-		else:
-			# Souleym creeper (purple-blue tones)
-			monster.face_texture_path = "res://assets/souleym.png"
-			monster.sound_patrol_path = "res://assets/souleym_sound.wav"
-			monster.sound_chase_path  = "res://assets/souleym_sound.wav"
-			monster.body_color_normal = Color(0.20, 0.15, 0.55)
-			monster.body_color_chase  = Color(0.50, 0.10, 0.65)
-			monster.body_color_enrage = Color(0.80, 0.05, 0.80)
+		monster.face_texture_path = t["face"]
+		monster.sound_patrol_path = t["sound"]
+		monster.sound_chase_path  = t["sound"]
+		monster.body_color_normal = t["normal"]
+		monster.body_color_chase  = t["chase"]
+		monster.body_color_enrage = t["enrage"]
 
 		add_child(monster)
 		monster.name = "Monster_%d" % i

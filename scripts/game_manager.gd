@@ -5,7 +5,7 @@ class_name GameManager
 var grid: Array
 var player_pos: Array
 var exit_pos: Array
-var monster_positions: Array   # first 3 = Janna, next 3 = Souleym
+var monster_positions: Array   # split evenly: malak | bayan | kaltoum
 var safezone_positions: Array
 var time_left: float
 var is_playing: bool
@@ -20,13 +20,14 @@ func _init() -> void:
 	player_pos   = spawns["player"]
 	exit_pos     = spawns["exit"]
 
-	# Monster count based on selected level
-	# easy=2 (1 Janna + 1 Souleym), medium=4, hard=6
-	var total_monsters: int = 4
+	# Monster count: 3 types (malak, bayan, kaltoum) × count_per_type
+	# easy = 1 each = 3 total | medium = 2 each = 6 total | hard = 3 each = 9 total
+	var count_per_type: int = 2  # default medium
 	match Config.selected_level:
-		"easy":   total_monsters = 2
-		"medium": total_monsters = 4
-		"hard":   total_monsters = 6
+		"easy":   count_per_type = 1
+		"medium": count_per_type = 2
+		"hard":   count_per_type = 3
+	var total_monsters: int = count_per_type * 3
 
 	var all_m = spawns["monsters"]
 	var floors = _get_floor_cells()
@@ -36,7 +37,7 @@ func _init() -> void:
 	for f in floors:
 		if f not in used:
 			extra.append(f)
-		if extra.size() >= 6:
+		if extra.size() >= 9:
 			break
 	# Slice to exact monster count needed
 	var all_positions = all_m + extra
